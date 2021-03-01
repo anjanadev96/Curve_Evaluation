@@ -14,7 +14,7 @@ setup(
     ],
     cmdclass={
         'build_ext': BuildExtension
-    },
-    packages=find_packages()
+    }
+    # packages=find_packages()
     
     )

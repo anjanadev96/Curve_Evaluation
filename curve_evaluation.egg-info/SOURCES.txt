@@ -1,0 +1,9 @@
+setup.py
+curve_evaluation.egg-info/PKG-INFO
+curve_evaluation.egg-info/SOURCES.txt
+curve_evaluation.egg-info/dependency_links.txt
+curve_evaluation.egg-info/top_level.txt
+curve_evaluation/csrc/curve_eval_cuda.cpp
+curve_evaluation/csrc/curve_eval_cuda_kernel.cu
+curve_evaluation/csrc/curve_eval_cuda.cpp
+curve_evaluation/csrc/curve_eval_cuda_kernel.cu

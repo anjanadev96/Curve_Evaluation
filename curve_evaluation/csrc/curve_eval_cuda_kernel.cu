@@ -31,12 +31,14 @@ __device__ __forceinline__ int find_span(int n, int p, float u, float* U)
 }
 
 
-__device__ __forceinline__ void basis_funs(int uspan_i, float u, int p, float* U, float* N, unsigned int i, unsigned int j)
+__device__ __forceinline__ void basis_funs(int uspan_i, float u, int p, float* U, float* N, unsigned int i)
 {
   float saved, temp;
   int col = p + 1;
   N[i*col] = 1.0;
-  if(j>0 && j < p + 1){
+  // if(j>0 && j < p + 1)
+  for (int j=1; j<=p; j++)
+  {
     saved = 0.0;
     for(int r = 0; r < j; r++){
       temp = N[i*col  + r]/((U[uspan_i + r + 1] - u) + (u - U[uspan_i  + 1 - j + r]));
@@ -64,19 +66,19 @@ __global__ void curve_cuda_pre_compute_basis_kernel(
     int u_size) {
 
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int j = blockIdx.y * blockDim.y + threadIdx.y;
+    // unsigned int j = blockIdx.y * blockDim.y + threadIdx.y;
     
 
     if(i < u_size ){
-      if (j < p+1){
+      
       
       uspan[i] = find_span(m, p, u[i], U_ptr);
       // 
       
 
-      basis_funs(uspan[i],u[i],p,U_ptr,Nu_ptr,i,j);
+      basis_funs(uspan[i],u[i],p,U_ptr,Nu_ptr,i);
 
-      }
+      
     }
   }
 
@@ -97,23 +99,57 @@ __global__ void curve_cuda_forward_kernel(
 
   unsigned int k = blockIdx.x * blockDim.x + threadIdx.x;
   unsigned int i = blockIdx.y * blockDim.y + threadIdx.y;
-  unsigned int l = blockIdx.z * blockDim.z + threadIdx.z;
+  // unsigned int l = blockIdx.z * blockDim.z + threadIdx.z;cd t
   // std::printf("Hello from k %d, i %d, l %d\n", k,i,l);
 
 
   if(k < ctrl_pts_size)
-  { if (i< u_size)
-    { if(l < (_dimension+1))
+  { 
+    if (i < u_size)
+    { 
+      for(int l = 0; l <= _dimension; l++)
       { 
         for (int j = 0; j<=p; j++)
-        {curves[k][i][l] = curves[k][i][l] + 
-                                            Nu[i][j]*ctrl_pts[k][uspan[i]-p + j][l];
+        {
+          curves[k][i][l] += Nu[i][j]*ctrl_pts[k][uspan[i]-p + j][l];
         }
-
-
-  
       }
+    }
+  }
+ }
 
+
+
+
+ __global__ void curve_cuda_backward_kernel(
+  torch::PackedTensorAccessor<float,3,torch::RestrictPtrTraits,size_t> grad_ctrl_pts,
+  torch::PackedTensorAccessor<float,3,torch::RestrictPtrTraits,size_t> grad_output,
+  torch::PackedTensorAccessor<int,1,torch::RestrictPtrTraits,size_t> uspan,
+  torch::PackedTensorAccessor<float,2,torch::RestrictPtrTraits,size_t> Nu,
+  torch::PackedTensorAccessor<float,1,torch::RestrictPtrTraits,size_t> u,
+  int m, 
+  int p,  
+  int _dimension,
+  unsigned int curves_size,
+  unsigned u_size){
+
+  unsigned int k = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int i = blockIdx.y * blockDim.y + threadIdx.y;
+  // unsigned int l = blockIdx.z * blockDim.z + threadIdx.z;cd t
+  // std::printf("Hello from k %d, i %d, l %d\n", k,i,l);
+
+
+  if(k < curves_size)
+  { 
+    if (i < u_size)
+    { 
+      for(int l = 0; l <= _dimension; l++)
+      { 
+        for (int j = 0; j <= p; j++)
+        {
+          grad_ctrl_pts[k][uspan[i]-p+j][l] += Nu[i][j]*grad_output[k][i][l];
+        }
+      }
     }
   }
  }
@@ -211,12 +247,45 @@ torch::Tensor curve_cuda_forward(
   }
 
 
-// std::vector<torch::Tensor> curve_cuda_backward(
-//   torch::Tensor grad_output,
-//   torch::Tensor ctrl_pts,
-//   torch::Tensor uspan,
-//   torch::Tensor Nu,
-//   torch::Tensor u,
-//   int m,
-//   int p,
-//   int _dimension);
+std::vector<torch::Tensor> curve_cuda_backward(
+  torch::Tensor grad_output,
+  torch::Tensor ctrl_pts,
+  torch::Tensor uspan,
+  torch::Tensor Nu,
+  torch::Tensor u,
+  int m,
+  int p,
+  int _dimension)
+  {
+
+  auto options = torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA, 0).requires_grad(true);
+  auto grad_ctrl_pts = torch::zeros({ctrl_pts.size(0),ctrl_pts.size(1), _dimension+1}, options);
+  unsigned int curves_size = ctrl_pts.size(0);
+  unsigned int u_size = u.size(0);
+
+
+  const dim3 block(16, 16, 4);
+  const dim3 grid((curves_size)/16+1, (u_size)/16+1, 1);
+
+
+  curve_cuda_backward_kernel<<<grid, block>>>(
+    grad_ctrl_pts.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>(),
+    grad_output.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>(),
+    uspan.packed_accessor<int,1,torch::RestrictPtrTraits,size_t>(),
+    Nu.packed_accessor<float,2,torch::RestrictPtrTraits,size_t>(),
+    u.packed_accessor<float,1,torch::RestrictPtrTraits,size_t>(),
+    m, 
+    p,  
+    _dimension,
+    curves_size,
+    u_size);
+
+  return {grad_ctrl_pts};
+
+
+
+
+
+
+
+  }
