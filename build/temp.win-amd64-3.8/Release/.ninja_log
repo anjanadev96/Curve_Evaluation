@@ -1,2 +1,10 @@
 # ninja log v5
-0	29708	6362931654405306	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+0	29112	6363352470548559	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+5	11673	6364122791169951	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda.obj	1da1afd9a3a63993
+0	30839	6364122981341539	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+4	28363	6364124119488125	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+3	29181	6364127583766986	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+4	28867	6364131039346759	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+5	29770	6364133724291439	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456
+5	10156	6364135322904981	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda.obj	1da1afd9a3a63993
+5	29013	6364135840186065	C:/Users/Anjana/Documents/CUDA_Curve_Eval/build/temp.win-amd64-3.8/Release/curve_evaluation/csrc/curve_eval_cuda_kernel.obj	56496447840d2456

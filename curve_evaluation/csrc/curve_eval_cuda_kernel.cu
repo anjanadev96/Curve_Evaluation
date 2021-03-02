@@ -111,7 +111,7 @@ __global__ void curve_cuda_forward_kernel(
       { 
         for (int j = 0; j<=p; j++)
         {
-          curves[k][i][l] += Nu[i][j]*ctrl_pts[k][uspan[i]-p + j][l];
+          curves[k][i][l] +=  Nu[i][j]*ctrl_pts[k][uspan[i]-p + j][l];
         }
       }
     }
@@ -281,11 +281,6 @@ std::vector<torch::Tensor> curve_cuda_backward(
     u_size);
 
   return {grad_ctrl_pts};
-
-
-
-
-
 
 
   }

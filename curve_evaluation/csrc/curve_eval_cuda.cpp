@@ -26,15 +26,15 @@ torch::Tensor curve_cuda_forward(
     int _dimension);
 
 
-// std::vector<torch::Tensor> curve_cuda_backward(
-//     torch::Tensor grad_output,
-//     torch::Tensor ctrl_pts,
-//     torch::Tensor uspan,
-//     torch::Tensor Nu,
-//     torch::Tensor u,
-//     int m,
-//     int p,
-//     int _dimension);
+std::vector<torch::Tensor> curve_cuda_backward(
+    torch::Tensor grad_output,
+    torch::Tensor ctrl_pts,
+    torch::Tensor uspan,
+    torch::Tensor Nu,
+    torch::Tensor u,
+    int m,
+    int p,
+    int _dimension);
 
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
@@ -98,9 +98,7 @@ CHECK_INPUT(ctrl_pts);
 CHECK_INPUT(uspan);
 CHECK_INPUT(Nu);
 CHECK_INPUT(u);
-
-return curve_cuda_backward(grad_output,ctrl_pts,uspan,Nu,u);
-
+return curve_cuda_backward(grad_output,ctrl_pts,uspan,Nu,u,m,p,_dimension);
 }
 
 
@@ -109,6 +107,6 @@ return curve_cuda_backward(grad_output,ctrl_pts,uspan,Nu,u);
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("pre_compute_basis", &curve_pre_compute_basis, "Pre-Compute Basis");
   m.def("forward", &curve_forward, "Forward func for Curve eval");
-  m.def("backward", &curve_backward, "Forward func for Curve eval");
+  m.def("backward", &curve_backward, "Backward func for Curve eval");
 }
 
