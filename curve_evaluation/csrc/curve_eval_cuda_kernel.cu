@@ -33,20 +33,24 @@ __device__ __forceinline__ int find_span(int n, int p, float u, float* U)
 
 __device__ __forceinline__ void basis_funs(int uspan_i, float u, int p, float* U, float* N, unsigned int i)
 {
+  float *left  = new float [p+1];
+  float *right = new float [p+1];
   float saved, temp;
   int col = p + 1;
   N[i*col] = 1.0;
-  // if(j>0 && j < p + 1)
-  for (int j=1; j<=p; j++)
-  {
+  for (int j=1; j<=p; j++){
+    left[j] = u-U[uspan_i+1-j];
+    right[j] = U[uspan_i+j]-u;
     saved = 0.0;
     for(int r = 0; r < j; r++){
-      temp = N[i*col  + r]/((U[uspan_i + r + 1] - u) + (u - U[uspan_i  + 1 - j + r]));
-      N[i*col+r] = saved + (U[uspan_i + r + 1] - u) * temp;
-      saved = (u - U[uspan_i + 1 - j + r]) * temp;
+
+      temp = N[i*col  + r]/(right[r+1] + left[j-r]);
+      N[i*col+r] = saved + right[r+1]*temp;
+      saved = left[j-r]*temp;
     }
+
     N[i*col+j] = saved;
-  }
+}
 
 }
 
@@ -186,8 +190,8 @@ std::vector<torch::Tensor> curve_cuda_pre_compute_basis(
 
   int u_size = u.size(0);
 
-  const dim3 block(4, 4, 1);
-  const dim3 grid(u_size/4+1, (p+1)/4+1, 1);
+  const dim3 block(1, 1, 1);
+  const dim3 grid(u_size+1, 1, 1);
 
   // AT_DISPATCH_FLOATING_TYPES(u.type(), "curve_cuda_pre_compute", ([&] {
     curve_cuda_pre_compute_basis_kernel<<<grid, block>>>(
@@ -225,7 +229,7 @@ torch::Tensor curve_cuda_forward(
   unsigned int ctrl_pts_size = ctrl_pts.size(0);
   unsigned int u_size = u.size(0);
 
-  const dim3 block(16, 16, 4);
+  const dim3 block(16, 16, 1);
   const dim3 grid((ctrl_pts_size)/16+1, (u_size)/16+1, 1);
 
 
@@ -264,7 +268,7 @@ std::vector<torch::Tensor> curve_cuda_backward(
   unsigned int u_size = u.size(0);
 
 
-  const dim3 block(16, 16, 4);
+  const dim3 block(16, 16, 1);
   const dim3 grid((curves_size)/16+1, (u_size)/16+1, 1);
 
 

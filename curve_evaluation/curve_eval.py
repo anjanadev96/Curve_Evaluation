@@ -75,7 +75,7 @@ class CurveEvalFunc(torch.autograd.Function):
         # ctrl_pts[:,:,:_dimension] = ctrl_pts[:,:,:_dimension]*ctrl_pts[:,:,_dimension].unsqueeze(-1)
         curves = forward(ctrl_pts, uspan, Nu, u, m, p, _dimension)
         ctx.curves = curves
-        print("curves shape", curves.shape)
+        # print("curves shape", curves.shape)
         return curves[:,:,:_dimension]/curves[:,:,_dimension].unsqueeze(-1)
         # return curves[:,:,:_dimension]
 
@@ -157,6 +157,11 @@ def main():
 
     ctrl_pts = dg.gen_control_points(1,8) # include a channel for weights
     layer = CurveEval(8, p=3, dimension=2, out_dim=128)
+
+
+    # print("uspan and Nu")
+    # print(layer.uspan)
+    # print(layer.Nu)
     
 
     
@@ -213,10 +218,10 @@ def main():
     opt = torch.optim.SGD(iter([inp_ctrl_pts]), lr=0.01)
     for i in range(3):
         out = layer(inp_ctrl_pts)
-        print(target.shape)
-        print(out.shape)
+        # print(target.shape)
+        # print(out.shape)
         loss,_ = chamfer_distance(target, out)
-        print(loss)
+        # print(loss)
         # loss,_ = chamfer_distance(point_cloud, out)
         curve_length = ((out[:,0:-1,:] - out[:,1:,:])**2).sum((1,2)).mean()
         loss+=0.5*curve_length
